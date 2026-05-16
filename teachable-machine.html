@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Teachable Machine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #16a34a;
+      --green-dark: #166534;
+      --green-mid: #15803d;
+      --green-light: #bbf7d0;
+      --green-pale: #f0fdf4;
+      --yellow-bg: #fefce8;
+      --yellow-border: #fde047;
+      --yellow-text: #854d0e;
+      --gray: #6b7280;
+      --gray-light: #d1d5db;
+      --text: #1f2937;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 40%, #f0f9ff 100%);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 50%, var(--green-dark) 100%);
+      padding: 32px 24px 28px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: -40px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; right: -20px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .header-icon { font-size: 36px; margin-bottom: 4px; }
+    .header h1 {
+      color: #fff;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: rgba(255,255,255,0.82);
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 8px;
+      max-width: 340px;
+      margin-inline: auto;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 4px;
+      margin-top: 20px;
+      width: fit-content;
+      margin-inline: auto;
+      gap: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .tab-btn {
+      background: transparent;
+      color: rgba(255,255,255,0.85);
+      border: none;
+      border-radius: 9px;
+      padding: 8px 24px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #fff;
+      color: var(--green);
+    }
+
+    /* MAIN CONTENT */
+    .container { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0 16px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 90px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      border: 1.5px solid var(--green-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .stat-icon { font-size: 18px; }
+    .stat-value { font-size: 18px; font-weight: 900; color: var(--green); }
+    .stat-label { font-size: 11px; color: var(--gray); font-weight: 700; }
+
+    /* TIP BOX */
+    .tip-box {
+      background: var(--yellow-bg);
+      border: 1.5px solid var(--yellow-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--yellow-text);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* CLASS CARDS */
+    .classes-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .class-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 2px solid var(--c-bg, #4ade80);
+      overflow: hidden;
+      box-shadow: 0 4px 24px color-mix(in srgb, var(--c-bg, #4ade80) 20%, transparent);
+      transition: box-shadow 0.2s;
+    }
+    .class-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+    }
+    .class-name {
+      font-weight: 900;
+      font-size: 17px;
+      color: #fff;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      flex: 1;
+      text-align: left;
+    }
+    .class-name-input {
+      flex: 1;
+      border-radius: 8px;
+      border: none;
+      padding: 4px 10px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      outline: none;
+      background: #fff;
+      color: #333;
+    }
+    .delete-btn {
+      background: rgba(255,255,255,0.25);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      width: 28px; height: 28px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 900;
+      margin-left: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rename-confirm {
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      margin-left: 6px;
+    }
+    .sample-meta {
+      padding: 10px 18px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sample-badge {
+      border-radius: 20px;
+      padding: 2px 12px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .sample-hint { font-size: 11px; color: #aaa; }
+
+    .samples-wrap {
+      margin: 6px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+    .sample-chip {
+      border-radius: 8px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .class-input-row {
+      padding: 10px 18px 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .class-textarea {
+      flex: 1;
+      border-radius: 10px;
+      border: 1.5px solid var(--c-bg, #4ade80);
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: 'Nunito', sans-serif;
+      resize: none;
+      outline: none;
+      color: #333;
+      line-height: 1.4;
+    }
+    .add-sample-btn {
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 14px;
+      cursor: pointer;
+      font-size: 22px;
+      font-weight: 900;
+      align-self: stretch;
+    }
+
+    /* ADD CLASS */
+    .add-class-btn {
+      width: 100%;
+      margin-top: 16px;
+      background: #fff;
+      border: 2px dashed #86efac;
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--green);
+      font-family: 'Nunito', sans-serif;
+      transition: background 0.2s;
+    }
+    .add-class-btn:hover { background: var(--green-pale); }
+
+    /* TRAIN BTN */
+    .train-btn {
+      width: 100%;
+      margin-top: 20px;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 18px;
+      font-size: 17px;
+      font-weight: 900;
+      font-family: 'Nunito', sans-serif;
+      letter-spacing: 0.3px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .train-btn:disabled { background: var(--gray-light) !important; box-shadow: none !important; cursor: not-allowed; }
+    .train-hint { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 8px; font-weight: 600; }
+
+    /* TRAINING SPINNER */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    /* TEST PHASE */
+    .test-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 2px solid var(--green-light);
+      padding: 24px;
+      margin: 20px 0 16px;
+      box-shadow: 0 4px 20px #bbf7d040;
+    }
+    .test-card h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--green-dark);
+    }
+    .test-textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1.5px solid #86efac;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      resize: none;
+      outline: none;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .classify-btn {
+      width: 100%;
+      margin-top: 12px;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 900;
+      font-family: 'Nunito', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .classify-btn:disabled { background: var(--gray-light) !important; cursor: not-allowed; }
+
+    /* RESULTS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .results-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 2px solid var(--green-light);
+      padding: 24px;
+      box-shadow: 0 4px 20px #bbf7d040;
+      animation: fadeUp 0.35s ease;
+    }
+    .best-match {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--green-pale);
+      border-radius: 12px;
+    }
+    .best-match-label { font-size: 13px; color: var(--gray); font-weight: 700; margin-bottom: 4px; }
+    .best-match-name { font-size: 26px; font-weight: 900; color: var(--green); }
+    .best-match-conf { font-size: 13px; color: var(--green-dark); font-weight: 700; }
+    .all-preds-title { margin: 0 0 14px; font-size: 14px; font-weight: 800; color: #374151; }
+
+    .result-bar-wrap { margin-bottom: 12px; }
+    .result-bar-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .result-bar-name { font-weight: 800; font-size: 14px; color: #333; }
+    .result-bar-pct { font-weight: 700; font-size: 13px; }
+    .result-bar-track { background: #f0f0f0; border-radius: 100px; height: 10px; overflow: hidden; }
+    .result-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    }
+
+    .trained-info {
+      background: var(--green-pale);
+      border: 1.5px solid #86efac;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--green-dark);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* NO MODEL */
+    .no-model {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray);
+    }
+    .no-model .big-emoji { font-size: 48px; margin-bottom: 16px; }
+    .no-model p { font-weight: 700; font-size: 15px; }
+    .go-train-btn {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 14px;
+      font-family: 'Nunito', sans-serif;
+      margin-top: 12px;
+    }
+
+    /* PHASE VISIBILITY */
+    .phase { display: none; }
+    .phase.active { display: block; }
+
+    /* COLOR THEMES */
+    .theme-0 { --c-bg: #4ade80; --c-light: #bbf7d0; --c-dark: #166534; --c-accent: #16a34a; }
+    .theme-1 { --c-bg: #60a5fa; --c-light: #bfdbfe; --c-dark: #1e3a8a; --c-accent: #2563eb; }
+    .theme-2 { --c-bg: #f472b6; --c-light: #fce7f3; --c-dark: #831843; --c-accent: #db2777; }
+    .theme-3 { --c-bg: #fb923c; --c-light: #fed7aa; --c-dark: #7c2d12; --c-accent: #ea580c; }
+    .theme-4 { --c-bg: #a78bfa; --c-light: #ede9fe; --c-dark: #3b0764; --c-accent: #7c3aed; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">🤖</div>
+  <h1>Teachable Machine</h1>
+  <p>Train an AI with your own examples, then test it instantly</p>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchPhase('train')">🎓 Train</button>
+    <button class="tab-btn" onclick="switchPhase('test')">🔍 Test</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TRAIN PHASE -->
+  <div id="phase-train" class="phase active">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <span class="stat-icon">📂</span>
+        <span class="stat-value" id="stat-classes">3</span>
+        <span class="stat-label">Classes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📝</span>
+        <span class="stat-value" id="stat-samples">0</span>
+        <span class="stat-label">Samples</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🧠</span>
+        <span class="stat-value" id="stat-status">Not trained</span>
+        <span class="stat-label">Status</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      💡 <strong>How to train:</strong> Add text descriptions as samples for each class. The more samples, the smarter your model! Double-click a class name to rename it.
+    </div>
+
+    <div class="classes-list" id="classes-list"></div>
+
+    <button class="add-class-btn" onclick="addClass()">+ Add New Class</button>
+
+    <button class="train-btn" id="train-btn"
+      style="background: linear-gradient(135deg, #16a34a, #166534); box-shadow: 0 6px 24px #16a34a55;"
+      onclick="trainModel()">
+      🚀 Train Model
+    </button>
+    <p class="train-hint" id="train-hint" style="display:none">Add at least 2 classes with samples to train</p>
+  </div>
+
+  <!-- TEST PHASE -->
+  <div id="phase-test" class="phase">
+    <div id="no-model" class="no-model">
+      <div class="big-emoji">🧠</div>
+      <p>Train your model first!</p>
+      <button class="go-train-btn" onclick="switchPhase('train')">Go to Training →</button>
+    </div>
+
+    <div id="test-ui" style="display:none">
+      <div class="test-card">
+        <h3>🔍 Test Your Model</h3>
+        <textarea id="test-input" class="test-textarea" rows="4"
+          placeholder="Type something to classify… e.g. 'a furry animal that barks'"
+          oninput="onTestInput()"></textarea>
+        <button class="classify-btn" id="classify-btn"
+          style="background: linear-gradient(135deg,#16a34a,#166534);"
+          onclick="classify()" disabled>⚡ Classify</button>
+      </div>
+
+      <div id="results-area" style="display:none" class="results-card">
+        <div class="best-match">
+          <div class="best-match-label">BEST MATCH</div>
+          <div class="best-match-name" id="best-name">—</div>
+          <div class="best-match-conf" id="best-conf">—</div>
+        </div>
+        <p class="all-preds-title">All Predictions</p>
+        <div id="bars-container"></div>
+      </div>
+
+      <div class="trained-info" id="trained-info"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ─── STATE ───────────────────────────────────────────────────
+  const COLORS = [
+    { bg:'#4ade80', light:'#bbf7d0', dark:'#166534', accent:'#16a34a' },
+    { bg:'#60a5fa', light:'#bfdbfe', dark:'#1e3a8a', accent:'#2563eb' },
+    { bg:'#f472b6', light:'#fce7f3', dark:'#831843', accent:'#db2777' },
+    { bg:'#fb923c', light:'#fed7aa', dark:'#7c2d12', accent:'#ea580c' },
+    { bg:'#a78bfa', light:'#ede9fe', dark:'#3b0764', accent:'#7c3aed' },
+  ];
+
+  let classes = [
+    { id: 0, name: 'Cat', samples: [] },
+    { id: 1, name: 'Dog', samples: [] },
+    { id: 2, name: 'Bird', samples: [] },
+  ];
+  let nextId = 3;
+  let trained = false;
+  let currentPhase = 'train';
+
+  // ─── PHASE SWITCH ────────────────────────────────────────────
+  function switchPhase(phase) {
+    currentPhase = phase;
+    document.querySelectorAll('.phase').forEach(el => el.classList.remove('active'));
+    document.getElementById('phase-' + phase).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', (i === 0 && phase === 'train') || (i === 1 && phase === 'test'));
+    });
+    if (phase === 'test') renderTestUI();
+  }
+
+  // ─── RENDER CLASSES ─────────────────────────────────────────
+  function renderClasses() {
+    const list = document.getElementById('classes-list');
+    list.innerHTML = '';
+    classes.forEach((cls, idx) => {
+      const color = COLORS[idx % COLORS.length];
+      const card = document.createElement('div');
+      card.className = 'class-card';
+      card.style.cssText = `--c-bg:${color.bg}; --c-light:${color.light}; --c-dark:${color.dark}; --c-accent:${color.accent}; border-color:${color.bg}; box-shadow: 0 4px 24px ${color.bg}33`;
+
+      const chipHtml = cls.samples.length
+        ? `<div class="samples-wrap">${cls.samples.map(s =>
+            `<span class="sample-chip" style="background:${color.light};color:${color.dark}">${escHtml(s)}</span>`
+          ).join('')}</div>`
+        : '';
+
+      card.innerHTML = `
+        <div class="class-header" style="background:linear-gradient(135deg,${color.bg},${color.accent})">
+          <span class="class-name" ondblclick="startRename(${cls.id}, this)" data-id="${cls.id}">${escHtml(cls.name)}</span>
+          <button class="delete-btn" onclick="deleteClass(${cls.id})">×</button>
+        </div>
+        <div class="sample-meta">
+          <span class="sample-badge" style="background:${color.light};color:${color.dark}">${cls.samples.length} sample${cls.samples.length !== 1 ? 's' : ''}</span>
+          ${cls.samples.length === 0 ? '<span class="sample-hint">Add samples below</span>' : ''}
+        </div>
+        ${chipHtml}
+        <div class="class-input-row">
+          <textarea class="class-textarea" id="ta-${cls.id}" rows="2"
+            placeholder='Describe a "${escHtml(cls.name)}"…'
+            style="border-color:${color.bg}"
+            onkeydown="taKeydown(event, ${cls.id})"></textarea>
+          <button class="add-sample-btn"
+            style="background:linear-gradient(135deg,${color.bg},${color.accent})"
+            onclick="addSampleFromTA(${cls.id})">+</button>
+        </div>`;
+      list.appendChild(card);
+    });
+    updateStats();
+    updateTrainBtn();
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── RENAME ──────────────────────────────────────────────────
+  function startRename(id, span) {
+    const val = classes.find(c => c.id === id).name;
+    const input = document.createElement('input');
+    input.className = 'class-name-input';
+    input.value = val;
+    const confirm = document.createElement('button');
+    confirm.className = 'rename-confirm';
+    confirm.textContent = '✓';
+    confirm.onclick = () => doRename(id, input.value);
+    input.onkeydown = e => { if (e.key === 'Enter') doRename(id, input.value); };
+    span.parentNode.insertBefore(input, span);
+    span.parentNode.insertBefore(confirm, span.nextSibling);
+    span.remove();
+    input.focus();
+  }
+  function doRename(id, name) {
+    if (name.trim()) classes = classes.map(c => c.id === id ? {...c, name: name.trim()} : c);
+    trained = false;
+    renderClasses();
+    updateStats();
+  }
+
+  // ─── SAMPLES ─────────────────────────────────────────────────
+  function taKeydown(e, id) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addSampleFromTA(id); }
+  }
+  function addSampleFromTA(id) {
+    const ta = document.getElementById('ta-' + id);
+    const text = ta?.value?.trim();
+    if (!text) return;
+    classes = classes.map(c => c.id === id ? {...c, samples: [...c.samples, text]} : c);
+    trained = false;
+    renderClasses();
+    // refocus textarea
+    setTimeout(() => { const t = document.getElementById('ta-' + id); if(t) t.focus(); }, 10);
+  }
+
+  // ─── ADD / DELETE CLASS ──────────────────────────────────────
+  function addClass() {
+    classes.push({ id: nextId, name: `Class ${nextId + 1}`, samples: [] });
+    nextId++;
+    trained = false;
+    renderClasses();
+  }
+  function deleteClass(id) {
+    classes = classes.filter(c => c.id !== id);
+    trained = false;
+    renderClasses();
+  }
+
+  // ─── STATS & TRAIN BTN ───────────────────────────────────────
+  function updateStats() {
+    document.getElementById('stat-classes').textContent = classes.length;
+    document.getElementById('stat-samples').textContent = classes.reduce((s, c) => s + c.samples.length, 0);
+    document.getElementById('stat-status').textContent = trained ? 'Trained ✓' : 'Not trained';
+  }
+  function updateTrainBtn() {
+    const canTrain = classes.length >= 2 && classes.every(c => c.samples.length > 0);
+    const btn = document.getElementById('train-btn');
+    const hint = document.getElementById('train-hint');
+    btn.disabled = !canTrain;
+    btn.style.background = canTrain ? 'linear-gradient(135deg,#16a34a,#166534)' : '';
+    btn.style.boxShadow = canTrain ? '0 6px 24px #16a34a55' : '';
+    hint.style.display = canTrain ? 'none' : 'block';
+  }
+
+  // ─── TRAIN ───────────────────────────────────────────────────
+  function trainModel() {
+    const btn = document.getElementById('train-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Training your model…';
+    setTimeout(() => {
+      trained = true;
+      btn.innerHTML = '🚀 Train Model';
+      updateStats();
+      updateTrainBtn();
+      switchPhase('test');
+    }, 1200);
+  }
+
+  // ─── TEST UI ─────────────────────────────────────────────────
+  function renderTestUI() {
+    document.getElementById('no-model').style.display = trained ? 'none' : 'block';
+    document.getElementById('test-ui').style.display = trained ? 'block' : 'none';
+    if (trained) {
+      const total = classes.reduce((s,c)=>s+c.samples.length,0);
+      document.getElementById('trained-info').innerHTML =
+        `<strong>Trained on ${total} sample${total!==1?'s':''}</strong> across ${classes.length} class${classes.length!==1?'es':''}: ${classes.map(c=>c.name).join(', ')}`;
+    }
+  }
+
+  function onTestInput() {
+    const val = document.getElementById('test-input').value.trim();
+    const btn = document.getElementById('classify-btn');
+    btn.disabled = !val;
+    btn.style.background = val ? 'linear-gradient(135deg,#16a34a,#166534)' : '';
+    if (!val) document.getElementById('results-area').style.display = 'none';
+  }
+
+  // ─── CLASSIFY ────────────────────────────────────────────────
+  function tokenize(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(Boolean);
+  }
+  function similarity(a, b) {
+    const ta = new Set(tokenize(a)), tb = new Set(tokenize(b));
+    if (!ta.size || !tb.size) return 0;
+    let overlap = 0;
+    for (const t of ta) if (tb.has(t)) overlap++;
+    return overlap / Math.sqrt(ta.size * tb.size);
+  }
+
+  function classify() {
+    const input = document.getElementById('test-input').value.trim();
+    if (!input || !trained) return;
+
+    const scores = classes.map(cls => ({
+      name: cls.name,
+      score: cls.samples.length ? Math.max(...cls.samples.map(s => similarity(input, s))) : 0,
+    }));
+    const total = scores.reduce((s, c) => s + c.score, 0);
+    const results = scores.map(c => ({
+      name: c.name,
+      confidence: total === 0 ? 1 / scores.length : c.score / total,
+    })).sort((a, b) => b.confidence - a.confidence);
+
+    const top = results[0];
+    document.getElementById('best-name').textContent = top.name;
+    document.getElementById('best-conf').textContent = (top.confidence * 100).toFixed(1) + '% confidence';
+
+    const bars = document.getElementById('bars-container');
+    bars.innerHTML = '';
+    results.forEach((r, i) => {
+      const cls = classes.find(c => c.name === r.name);
+      const color = COLORS[classes.indexOf(cls) % COLORS.length];
+      const pct = (r.confidence * 100).toFixed(1);
+      const div = document.createElement('div');
+      div.className = 'result-bar-wrap';
+      div.innerHTML = `
+        <div class="result-bar-top">
+          <span class="result-bar-name">${escHtml(r.name)}</span>
+          <span class="result-bar-pct" style="color:${color.accent}">${pct}%</span>
+        </div>
+        <div class="result-bar-track">
+          <div class="result-bar-fill" id="bar-${i}"
+            style="background:linear-gradient(90deg,${color.bg},${color.accent}); width:0%"></div>
+        </div>`;
+      bars.appendChild(div);
+      setTimeout(() => {
+        document.getElementById('bar-' + i).style.width = r.confidence * 100 + '%';
+      }, 50 + i * 80);
+    });
+
+    document.getElementById('results-area').style.display = 'block';
+  }
+
+  // ─── INIT ────────────────────────────────────────────────────
+  renderClasses();
+</script>
+</body>
+</html>
