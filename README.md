@@ -22,7 +22,7 @@ Download `teachable-machine.html` and open it directly in any modern browser. Th
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/teachable-machine.git
+git clone https://github.com/kuldeep811p/Pinnacle-Labs---Teachable-Machine
 
 # Open in browser
 open teachable-machine.html
