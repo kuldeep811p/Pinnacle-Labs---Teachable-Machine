@@ -43,60 +43,6 @@ open teachable-machine.html
 2. Type any description in the input box
 3. Click **⚡ Classify** to see predictions with confidence scores
 
-### The Algorithm
-The classifier uses a **token-overlap similarity** approach inspired by TF-IDF:
-
-- Each input is tokenized into lowercase words
-- Similarity between the input and each training sample is computed using Jaccard-style overlap, normalized by the geometric mean of token counts
-- Per-class scores are the **max similarity** across all samples for that class
-- Final confidence values are softmax-normalized across all classes
-
-> The more descriptive and varied your training samples, the more accurate the classifications become.
-
----
-
-## 🛠️ Customization
-
-Want to extend it? Here are some quick starting points:
-
-**Add default classes on load**
-```javascript
-let classes = [
-  { id: 0, name: 'Positive', samples: [] },
-  { id: 1, name: 'Negative', samples: [] },
-  { id: 2, name: 'Neutral', samples: [] },
-];
-```
-
-**Change the color palette**
-```javascript
-const COLORS = [
-  { bg: '#your-color', light: '#...', dark: '#...', accent: '#...' },
-  // add more...
-];
-```
-
-**Swap in a smarter algorithm**
-Replace the `similarity()` function with cosine similarity, BM25, or connect to an embedding API for production-grade accuracy.
-
----
-
-## 🌐 Browser Support
-
-| Browser | Support |
-|---|---|
-| Chrome / Edge | ✅ Full |
-| Firefox | ✅ Full |
-| Safari | ✅ Full |
-| Mobile browsers | ✅ Full |
-
----
-
-## 📄 License
-
-MIT — free to use, modify, and distribute.
-
----
 
 ## 🙌 Contributing
 
@@ -109,5 +55,3 @@ Pull requests are welcome! Feel free to open an issue for bugs, ideas, or improv
 5. Open a Pull Request
 
 ---
-
-> Built with 💚 — no frameworks, no build tools, just the web platform.
